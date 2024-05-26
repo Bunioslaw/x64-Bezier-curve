@@ -1,40 +1,19 @@
-# Nazwa pliku wykonywalnego
-TARGET = program
-
-# Kompilator i asembler
 CC = gcc
-ASM = nasm
+CFLAGS = -m64 -Wall
 
-# Flagi kompilatora
-CFLAGS = -Wall -g
+all: main.o f.o
+	$(CC) $(CFLAGS) main.o f.o -o f
 
-# Flagi asemblera
-ASMFLAGS = -f elf64
+main.o: main.c
+	$(CC) $(CFLAGS) -c main.c -o main.o
 
-# Pliki źródłowe
-C_SOURCES = main.c
-ASM_SOURCES = f.asm
+f.o: f.s
+	nasm -f elf64 f.s
+	
+recompile:
+	rm -rf *.o
+	rm -rf f
+	make all
 
-# Pliki obiektowe
-OBJS = $(C_SOURCES:.c=.o) $(ASM_SOURCES:.asm=.o)
-
-# Reguła domyślna
-all: $(TARGET)
-
-# Reguła budowania pliku wykonywalnego
-$(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^
-
-# Reguła budowania plików obiektowych z plików C
-%.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-# Reguła budowania plików obiektowych z plików ASM
-%.o: %.asm
-	$(ASM) $(ASMFLAGS) -o $@ $<
-
-# Reguła czyszczenia
 clean:
-	rm -f $(OBJS) $(TARGET)
-
-.PHONY: all clean
+	rm -rf *.o f

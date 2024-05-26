@@ -1,12 +1,15 @@
 #include <stdio.h>
 
-extern int f(char* str);
+extern void f(char* str);
 
-int main() {
-    char str[] = "Hello, World!";
-    printf("Before: %s\n", str);
-    printf("Address of str: %p\n", (void*)str);
-    f(str);
-    printf("After: %s\n", str);
+int main(int argc, char* argv[]) {
+    if(argc < 2){
+        printf("Arg missing.\n");
+        return -1;
+    }
+    
+    printf("Before: %s\n", argv[1]);
+    f(argv[1]);
+    printf("After: %s\n", argv[1]);
     return 0;
 }

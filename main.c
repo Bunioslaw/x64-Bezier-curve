@@ -1,18 +1,12 @@
 #include <stdio.h>
-#include "f.h"
 
-int main(int argc, char *argv[]){
-    if(argc < 3){
-        printf("Arg missing.\n");
-        return -1;
-    }
+extern int f(char* str);
 
-    int n;
-    sscanf(argv[2], "%d", &n);
-
-    f(argv[1], n);
-    
-    printf("%s\n",argv[1]);
-    
+int main() {
+    char str[] = "Hello, World!";
+    printf("Before: %s\n", str);
+    printf("Address of str: %p\n", (void*)str);
+    f(str);
+    printf("After: %s\n", str);
     return 0;
 }

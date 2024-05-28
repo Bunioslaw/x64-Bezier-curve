@@ -1,8 +1,8 @@
 section .text
 
-global f
+global bezier
 
-f:
+bezier:
     push rbp
     mov rbp, rsp
     mov rax, rdi

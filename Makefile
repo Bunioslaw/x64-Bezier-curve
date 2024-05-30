@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -m64 -Wall
-LDFLAGS = -lallegro -lallegro_image -lallegro_primitives -lallegro_font -lallegro_ttf -lallegro_main
+LDFLAGS = -lallegro -lallegro_primitives
 
 all: main.o bezier.o
 	$(CC) $(CFLAGS) main.o bezier.o -o bezier $(LDFLAGS)

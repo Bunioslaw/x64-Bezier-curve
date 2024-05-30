@@ -2,7 +2,7 @@
 #include <allegro5/allegro_primitives.h>
 #include <stdio.h>
 
-extern int bezier(char* bitmap, int width, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, int x5, int y5);
+extern void bezier(char* bitmap, int width, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, int x5, int y5);
 
 int main(int argc, char **argv) {
     int width = 800;
@@ -51,25 +51,29 @@ int main(int argc, char **argv) {
             running = false;
         }
         else if (ev.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN && ev.mouse.button) {
-            printf("Kliknieto na pozycji: (%x, %x)\n", ev.mouse.x, ev.mouse.y); // Wydrukuj pozycję myszy
+            printf("Kliknieto na pozycji: (%x, %x)\n", ev.mouse.x, ev.mouse.y);
             p[ind][0] = ev.mouse.x;
             p[ind][1] = ev.mouse.y;
-            al_draw_filled_circle(ev.mouse.x, ev.mouse.y, 5, al_map_rgba(255, 0, 0, 255));
+            al_draw_filled_circle(ev.mouse.x, ev.mouse.y, 3, al_map_rgba(255, 0, 0, 255));
             ind++;
+            al_flip_display();
             if (ind > 4){
-                al_clear_to_color(al_map_rgb(255, 255, 255));
+                // clear bitmap
                 al_destroy_bitmap(bitmap);
                 bitmap = al_create_bitmap(width, height);
 
+                // start drawing
                 locked_region = al_lock_bitmap(bitmap, ALLEGRO_PIXEL_FORMAT_ANY_32_WITH_ALPHA, ALLEGRO_LOCK_WRITEONLY);
-                printf_s("Drawing bezier\n");// call bezier function
-                printf("%x\n", bezier(locked_region->data, width, p[0][0], p[0][1], p[1][0], p[1][1], p[2][0], p[2][1], p[3][0], p[3][1], p[4][0], p[4][1]));
+                printf("Drawing bezier\n");
+                bezier(locked_region->data, width, p[0][0], p[0][1], p[1][0], p[1][1], p[2][0], p[2][1], p[3][0], p[3][1], p[4][0], p[4][1]);
                 al_unlock_bitmap(bitmap);
-
+                
+                // display results
                 al_draw_bitmap(bitmap, 0, 0, 0);
+                al_flip_display();
+                al_clear_to_color(al_map_rgb(255, 255, 255));
                 ind = 0;
             }
-            al_flip_display();
         }
     }
 

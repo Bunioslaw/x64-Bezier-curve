@@ -11,7 +11,7 @@ section .data
     %define y4      xmm12   ;[RBP+104]
     %define width   rdx
     %define bmp     rcx
-    step: dd 0.0001
+    step: dd 0.00001
     one: dd 1.0
     zero: dd 0.0
 
@@ -22,17 +22,15 @@ global bezier
 bezier:
     push rbp
     mov rbp, rsp
+    push rbx
+    push rdi
+    push rsi
+    push r12
+    push r13
+    push r14
+    push r15
 
-    sub rsp, 128
-    vmovups [rsp], xmm6
-    vmovups [rsp+16], xmm7
-    vmovups [rsp+32], xmm8
-    vmovups [rsp+48], xmm9
-    vmovups [rsp+64], xmm10
-    vmovups [rsp+80], xmm11
-    vmovups [rsp+96], xmm12
-
-    finit
+    ; initialize floats
     mov rax, one
     movss xmm0, dword [rax]     ; xmm0 = 1 - t
 
@@ -42,21 +40,34 @@ bezier:
     mov rax, step
     movss xmm2, dword [rax]     ; xmm2 = step
 
-main:
-    ucomiss xmm0, xmm2
-    jbe end
+    ; store points in regs
+    mov esi, [RBP+48]
+    mov edi, [RBP+56]
+    mov r10d, [RBP+64]
+    mov r11d, [RBP+72]
+    mov r12d, [RBP+80]
+    mov r13d, [RBP+88]
+    mov r14d, [RBP+96]
+    mov r15d, [RBP+104]
 
+main:
+    ; end if (1-t) < step
+    ucomiss xmm0, xmm2
+    jb end
+
+    ; initialize points
     cvtsi2ss x0, r8
     cvtsi2ss y0, r9
-    cvtsi2ss x1, dword [RBP+48]
-    cvtsi2ss y1, dword [RBP+56]
-    cvtsi2ss x2, dword [RBP+64]
-    cvtsi2ss y2, dword [RBP+72]
-    cvtsi2ss x3, dword [RBP+80]
-    cvtsi2ss y3, dword [RBP+88]
-    cvtsi2ss x4, dword [RBP+96]
-    cvtsi2ss y4, dword [RBP+104]
+    cvtsi2ss x1, rsi
+    cvtsi2ss y1, rdi
+    cvtsi2ss x2, r10d
+    cvtsi2ss y2, r11d
+    cvtsi2ss x3, r12d
+    cvtsi2ss y3, r13d
+    cvtsi2ss x4, r14d
+    cvtsi2ss y4, r15d
 
+    ; start calculations
     movss xmm13, xmm0       ; (1-t)
     mulss x3, xmm13
     mulss y3, xmm13
@@ -89,18 +100,19 @@ main:
     mulss x4, xmm13
     mulss y4, xmm13
 
-    mov eax, 4
-    cvtsi2ss xmm13, eax
+    mov rax, 4
+    cvtsi2ss xmm13, rax
     mulss x1, xmm13
     mulss y1, xmm13
     mulss x3, xmm13
     mulss y3, xmm13
 
-    mov eax, 6
-    cvtsi2ss xmm13, eax
+    mov rax, 6
+    cvtsi2ss xmm13, rax
     mulss x2, xmm13
     mulss y2, xmm13
 
+    ; sum up points
     movss xmm13, x0
     addss xmm13, x1
     addss xmm13, x2
@@ -113,32 +125,32 @@ main:
     addss xmm14, y3
     addss xmm14, y4
 
+    ; convert to integers
+    cvttss2si rax, xmm13    ; x to draw
+    cvttss2si rbx, xmm14    ; y to draw
+    
+    ; calculate address in memory
+    imul rbx, width
+    add rbx, rax
+    shl rbx, 2
+    add rbx, bmp
+    mov dword [rbx], 0xff000000
+
+    ; update t and (1-t)
     subss xmm0, xmm2
     addss xmm1, xmm2
-
-    cvttss2si r10, xmm13    ; x to draw
-
-    cvttss2si r11, xmm14    ; y to draw
-    
-    imul r11, width
-    add r11, r10
-    shl r11, 2
-    add r11, bmp
-    mov dword [r11], 0xff000000
 
     jmp main
 
 end:
-    vmovups xmm6, [rsp]
-    vmovups xmm7, [rsp+16]
-    vmovups xmm8, [rsp+32]
-    vmovups xmm9, [rsp+48]
-    vmovups xmm10, [rsp+64]
-    vmovups xmm11, [rsp+80]
-    vmovups xmm12, [rsp+96]
 
-    add rsp, 128
-
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rsi
+    pop rdi
+    pop rbx
     mov rsp, rbp
     pop rbp
     ret

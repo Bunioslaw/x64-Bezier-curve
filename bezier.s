@@ -1,6 +1,6 @@
 section .data
-    %define x0      xmm3
-    %define y0      xmm4
+    %define x0      xmm3    ;r8
+    %define y0      xmm4    ;r9
     %define x1      xmm5    ;[RBP+48]
     %define y1      xmm6    ;[RBP+56]
     %define x2      xmm7    ;[RBP+64]
@@ -20,6 +20,7 @@ section .text
 global bezier
 
 bezier:
+    ; save nonvolatile registers
     push rbp
     mov rbp, rsp
     push rbx
@@ -29,6 +30,18 @@ bezier:
     push r13
     push r14
     push r15
+    
+    sub rsp, 160
+    movdqu [rsp], xmm6
+    movdqu [rsp+16], xmm7
+    movdqu [rsp+32], xmm8
+    movdqu [rsp+48], xmm9
+    movdqu [rsp+64], xmm10
+    movdqu [rsp+80], xmm11
+    movdqu [rsp+96], xmm12
+    movdqu [rsp+112], xmm13
+    movdqu [rsp+128], xmm14
+    movdqu [rsp+144], xmm15
 
     ; initialize floats
     mov rax, one
@@ -58,8 +71,8 @@ main:
     ; initialize points
     cvtsi2ss x0, r8
     cvtsi2ss y0, r9
-    cvtsi2ss x1, rsi
-    cvtsi2ss y1, rdi
+    cvtsi2ss x1, esi
+    cvtsi2ss y1, edi
     cvtsi2ss x2, r10d
     cvtsi2ss y2, r11d
     cvtsi2ss x3, r12d
@@ -143,7 +156,19 @@ main:
     jmp main
 
 end:
-
+    ; restore registers
+    movdqu xmm6, [rsp]
+    movdqu xmm7, [rsp+16]
+    movdqu xmm8, [rsp+32]
+    movdqu xmm9, [rsp+48]
+    movdqu xmm10, [rsp+64]
+    movdqu xmm11, [rsp+80]
+    movdqu xmm12, [rsp+96]
+    movdqu xmm13, [rsp+112]
+    movdqu xmm14, [rsp+128]
+    movdqu xmm15, [rsp+144]
+    add rsp, 160
+    
     pop r15
     pop r14
     pop r13
